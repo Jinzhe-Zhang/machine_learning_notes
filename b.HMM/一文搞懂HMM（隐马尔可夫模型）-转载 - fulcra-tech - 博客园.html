@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)https://www.cnblogs.com/fulcra/p/11065474.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="never">
+    <meta name="description" content="写在文前：原博文地址：https://www.cnblogs.com/skyme/p/4651331.html 什么是熵(Entropy) 简单来说，熵是表示物质系统状态的一种度量，用它老表征系统的无">
+    <meta property="og:description" content="写在文前：原博文地址：https://www.cnblogs.com/skyme/p/4651331.html 什么是熵(Entropy) 简单来说，熵是表示物质系统状态的一种度量，用它老表征系统的无">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/bundle-coffee.min.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/bundle-coffee-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/fulcra/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/fulcra/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/fulcra/wlwmanifest.xml">
+    <script async="" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/analytics.js.下载"></script><script>
+        var currentBlogId = 522638;
+        var currentBlogApp = 'fulcra';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'coffee';
+        var visitorUserId = '';
+    </script>
+        <script>
+            var currentPostDateAdded = '2019-06-21 04:42';
+        </script>
+    <script src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/blog-common.min.js.下载"></script>
+    
+    
+    
+</head>
+<body class="has-navbar">
+    <a name="top"></a>
+        <div id="bannerbar" class="formobile">
+            <a href="https://brands.cnblogs.com/aws/free?source=mobile-banner" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;aws-mobile-bannerbar&#39;)"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/35695-20201104135303888-13496776.png" alt=""></a>
+        </div>
+    <div id="top_nav" class="navbar">
+        <nav id="nav_main" class="navbar-main">
+            <ul id="nav_left" class="navbar-list navbar-left">
+                <li class="navbar-branding"><a href="https://www.cnblogs.com/" title="开发者的网上家园"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/logo.svg" alt="博客园Logo"></a></li>
+                <li><a href="https://www.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-sitehome&#39;)">首页</a></li>
+                <li><a href="https://news.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-news&#39;)">新闻</a></li>
+                <li><a href="https://q.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-q&#39;)">博问</a></li>
+                <li><a id="nav_brandzone" href="https://brands.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-brands&#39;)">专区</a></li>
+                <li><a href="https://ing.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-ing&#39;)">闪存</a></li>
+                <li><a href="https://edu.cnblogs.com/" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;skin-navbar-edu&#39;)">班级</a></li>
+            </ul>
+            <ul id="nav_right" class="navbar-list navbar-right">
+                <li>
+                    <form id="zzk_search" class="navbar-search" action="https://zzk.cnblogs.com/s" method="get">
+                        <input name="w" id="zzk_search_input" placeholder="代码改变世界" type="text" tabindex="3">
+                        <button type="submit" id="zzk_search_button">
+                            <img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/search.svg" alt="搜索">
+                        </button>
+                    </form>
+                </li>
+                <li id="navbar_login_status" class="navbar-list">
+                    <a id="navblog-myblog-icon" class="navbar-user-info navbar-blog" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx" alt="我的博客" title="我的博客" style="display: none;">
+                        <img id="myblog_icon" class="navbar-icon" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/myblog.svg" alt="我的博客">
+                    </a>
+                    <a class="navbar-user-info navbar-message navbar-icon-wrapper" href="https://msg.cnblogs.com/" alt="短消息" title="短消息" style="display: none;">
+                        <img id="msg_icon" class="navbar-icon" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/message.svg" alt="短消息">
+                        <span id="msg_count" style="display: none"></span>
+                    </a>
+                    <div id="user_info" class="navbar-user-info dropdown" style="display: none;">
+                        <a class="dropdown-button" href="https://home.cnblogs.com/">
+                            <img id="user_icon" class="navbar-avatar" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/avatar-default.svg" alt="用户头像">
+                        </a>
+                        <div class="dropdown-menu">
+                            <a id="navblog-myblog-text" href="https://passport.cnblogs.com/GetBlogApplyStatus.aspx">我的博客</a>
+                            <a href="https://home.cnblogs.com/">我的园子</a>
+                            <a href="https://account.cnblogs.com/settings/account">账号设置</a>
+                            <a href="javascript:void(0)" onclick="logout();">退出登录</a>
+                        </div>
+                    </div>
+                    <a class="navbar-anonymous" href="https://account.cnblogs.com/signup/" style="display: inline;">注册</a>
+                    <a class="navbar-anonymous" href="javascript:void(0);" onclick="login()" style="display: inline;">登录</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    
+    
+<!--done-->
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+	<a href="https://www.cnblogs.com/fulcra/"><img id="blogLogo" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/logo.gif" alt="返回主页"></a>			
+		
+<!--done-->
+<h1><a id="Header1_HeaderTitle" class="headermaintitle HeaderMainTitle" href="https://www.cnblogs.com/fulcra/">万丈红尘三杯酒, 千秋大业一壶茶！</a>
+</h1>
+<h2>
+
+</h2>
+
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+</div><!--end: header 头部 -->
+
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="navigator">
+			
+<ul id="navList">
+	<li><a id="blog_nav_sitehome" class="menu" href="https://www.cnblogs.com/">
+博客园</a>
+</li>
+	<li>
+<a id="blog_nav_myhome" class="menu" href="https://www.cnblogs.com/fulcra/">
+首页</a>
+</li>
+	<li>
+
+<a id="blog_nav_newpost" class="menu" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">
+新随笔</a>
+</li>
+	<li>
+<a id="blog_nav_contact" class="menu" href="https://msg.cnblogs.com/send/fulcra-tech">
+联系</a></li>
+	<li>
+<a id="blog_nav_admin" class="menu" href="https://i.cnblogs.com/">
+管理</a>
+</li>
+	<li>
+
+	
+</li>
+</ul>
+
+
+
+			<div class="blogStats">
+				
+				<!--done-->
+随笔- 
+3&nbsp;
+文章- 
+0&nbsp;
+评论- 
+5&nbsp;
+
+
+
+				
+			</div><!--end: blogStats -->
+		</div><!--end: navigator 博客导航栏 -->
+		<div id="post_detail">
+<!--done-->
+<div id="topics">
+	<div class="post">
+		<h1 class="postTitle">
+			
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/fulcra/p/11065474.html">
+    <span>一文搞懂HMM（隐马尔可夫模型）-转载</span>
+    
+
+
+</a>
+
+		</h1>
+		<div class="clear"></div>
+		<div class="postBody">
+			
+<div id="cnblogs_post_body" class="blogpost-body">
+    <h1><span style="font-weight: normal; font-size: 12pt"><em>写在文前：原博文地址：</em></span><span style="font-size: 10pt"><a href="https://www.cnblogs.com/skyme/p/4651331.html">https://www.cnblogs.com/skyme/p/4651331.html&nbsp;</a></span></h1><p><span style="font-size: 24pt; background-color: rgba(153, 204, 255, 1)">什么是熵(Entropy) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">简单来说，熵是表示物质系统状态的一种度量，用它老表征系统的无序程度。熵越大，系统越无序，意味着系统结构和运动的不确定和无规则；反之，，熵越小，系统越有序，意味着具有确定和有规则的运动状态。熵的中文意思是热量被温度除的商。负熵是物质系统有序化，组织化，复杂化状态的一种度量。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">熵最早来原于<strong style="margin: 0; padding: 0">物理学</strong>. 德国物理学家鲁道夫·克劳修斯首次提出熵的概念，用来表示任何一种能量在空间中分布的均匀程度，能量分布得越均匀，熵就越大。</p><ol style="margin: 0; padding: 0 0 0 40px; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 13px; background-color: rgba(254, 254, 242, 1)"><li style="margin: 0 0 1em; padding: 0; list-style: decimal">一滴墨水滴在清水中，部成了一杯淡蓝色溶液</li><li style="margin: 0 0 1em; padding: 0; list-style: decimal">热水晾在空气中，热量会传到空气中，最后使得温度一致</li></ol><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">更多的一些生活中的例子:</p><ol style="margin: 0; padding: 0 0 0 40px; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 13px; background-color: rgba(254, 254, 242, 1)"><li style="margin: 0 0 1em; padding: 0; list-style: decimal">熵力的一个例子是耳机线，我们将耳机线整理好放进口袋，下次再拿出来已经乱了。让耳机线乱掉的看不见的“力”就是熵力，耳机线喜欢变成更混乱。</li><li style="margin: 0 0 1em; padding: 0; list-style: decimal">熵力另一个具体的例子是弹性力。一根弹簧的力，就是熵力。 胡克定律其实也是一种熵力的表现。</li><li style="margin: 0 0 1em; padding: 0; list-style: decimal">万有引力也是熵力的一种(热烈讨论的话题)。</li><li style="margin: 0 0 1em; padding: 0; list-style: decimal">浑水澄清[1]</li></ol><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450265483975.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450272353131.png" alt="image" width="300" height="300" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">于是从微观看，熵就表现了这个系统所处状态的<strong style="margin: 0; padding: 0">不确定性程度</strong>。香农，描述一个信息系统的时候就借用了熵的概念，这里熵表示的是这个信息系统的<strong style="margin: 0; padding: 0">平均信息量</strong><strong style="margin: 0; padding: 0">(</strong><strong style="margin: 0; padding: 0">平均不确定程度</strong><strong style="margin: 0; padding: 0">)</strong>。</p><h1>最大熵模型</h1><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">我们在投资时常常讲不要把所有的鸡蛋放在一个篮子里，这样可以降低风险。在信息处理中，这个原理同样适用。在数学上，这个原理称为最大熵原理(the maximum entropy principle)。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">让我们看一个拼音转汉字的简单的例子。假如输入的拼音是"wang-xiao-bo"，利用语言模型，根据有限的上下文(比如前两个词)，我们能给出两个最常见的名字“王小波”和“王晓波 ”。至于要唯一确定是哪个名字就难了，即使利用较长的上下文也做不到。当然，我们知道如果通篇文章是介绍文学的，作家王小波的可能性就较大；而在讨论两岸关系时，台湾学者王晓波的可能性会较大。在上面的例子中，我们只需要综合两类不同的信息，即主题信息和上下文信息。虽然有不少凑合的办法，比如：分成成千上万种的不同的主题单独处理，或者对每种信息的作用加权平均等等，但都不能准确而圆满地解决问题，这样好比以前我们谈到的行星运动模型中的小圆套大圆打补丁的方法。在很多应用中，我们需要综合几十甚至上百种不同的信息，这种小圆套大圆的方法显然行不通。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">数学上最漂亮的办法是最大熵(maximum entropy)模型，它相当于行星运动的椭圆模型。“最大熵”这个名词听起来很深奥，但是它的原理很简单，我们每天都在用。说白了，就是要保留全部的不确定性，将风险降到最小。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">回到我们刚才谈到的拼音转汉字的例子，我们已知两种信息，第一，根据语言模型，wangxiao-bo可以被转换成王晓波和王小波；第二，根据主题，王小波是作家，《黄金时代》的作者等等，而王晓波是台湾研究两岸关系的学者。因此，我们就可以建立一个最大熵模型，同时满足这两种信息。现在的问题是，这样一个模型是否存在。匈牙利著名数学家、信息论最高奖香农奖得主希萨（Csiszar）证明，对任何一组不自相矛盾的信息，这个最大熵模型不仅存在，而且是唯一的。而且它们都有同一个非常简单的形式 -- 指数函数。下面公式是根据上下文（前两个词）和主题预测下一个词的最大熵模型，其中 w3 是要预测的词（王晓波或者王小波）w1 和 w2 是它的前两个字（比如说它们分别是“出版”，和“”），也就是其上下文的一个大致估计，subject 表示主题。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450278762003.jpg" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="640_wx_fmt=png&amp;tp=webp&amp;wxfrom=5.webp" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450287047116.jpg" alt="640_wx_fmt=png&amp;tp=webp&amp;wxfrom=5.webp" width="640" height="114" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">我们看到，在上面的公式中，有几个参数 lambda 和 Z ，他们需要通过观测数据训练出来。最大熵模型在形式上是最漂亮的统计模型，而在实现上是最复杂的模型之一。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">我们上次谈到用最大熵模型可以将各种信息综合在一起。我们留下一个问题没有回答，就是如何构造最大熵模型。我们已经所有的最大熵模型都是指数函数的形式，现在只需要确定指数函数的参数就可以了，这个过程称为模型的训练。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">最原始的最大熵模型的训练方法是一种称为通用迭代算法 GIS(generalized iterative scaling) 的迭代 算法。GIS 的原理并不复杂，大致可以概括为以下几个步骤：&nbsp;<br style="margin: 0; padding: 0">1. 假定第零次迭代的初始模型为等概率的均匀分布。&nbsp;<br style="margin: 0; padding: 0">2. 用第 N 次迭代的模型来估算每种信息特征在训练数据中的分布，如果超过了实际的，就把相应的模型参数变小；否则，将它们便大。&nbsp;<br style="margin: 0; padding: 0">3. 重复步骤 2 直到收敛。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">GIS 最早是由 Darroch 和 Ratcliff 在七十年代提出的。但是，这两人没有能对这种算法的物理含义进行很好地解释。后来是由数学家希萨（Csiszar)解释清楚的，因此，人们在谈到这个算法时，总是同时引用 Darroch 和Ratcliff 以及希萨的两篇论文。GIS 算法每次迭代的时间都很长，需要迭代很多次才能收敛，而且不太稳定，即使在 64 位计算机上都会出现溢出。因此，在实际应用中很少有人真正使用 GIS。大家只是通过它来了解最大熵模型的算法。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp; 八十年代，很有天才的孪生兄弟的达拉皮垂(Della Pietra)在 IBM 对 GIS 算法进行了两方面的改进，提出了改进迭代算法 IIS（improved iterative scaling）。这使得最大熵模型的训练时间缩短了一到两个数量级。这样最大熵模型才有可能变得实用。即使如此，在当时也只有 IBM 有条件是用最大熵模型。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">由于最大熵模型在数学上十分完美，对科学家们有很大的诱惑力，因此不少研究者试图把自己的问题用一个类似最大熵的近似模型去套。谁知这一近似，最大熵模型就变得不完美了，结果可想而知，比打补丁的凑合的方法也好不了多少。于是，不少热心人又放弃了这种方法。第一个在实际信息处理应用中验证了最大熵模型的优势的，是宾夕法尼亚大学马库斯的另一个高徒原 IBM 现微软的研究员拉纳帕提(Adwait Ratnaparkhi)。拉纳帕提的聪明之处在于他没有对最大熵模型进行近似，而是找到了几个最适合用最大熵模型、而计算量相对不太大的自然语言处理问题，比如词性标注和句法分析。拉纳帕提成功地将上下文信息、词性（名词、动词和形容词等）、句子成分（主谓宾）通过最大熵模型结合起来，做出了当时世界上最好的词性标识系统和句法分析器。拉纳帕提的论文发表后让人们耳目一新。拉纳帕提的词性标注系统，至今仍然是使用单一方法最好的系统。科学家们从拉纳帕提的成就中，又看到了用最大熵模型解决复杂的文字信息处理的希望。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">但是，最大熵模型的计算量仍然是个拦路虎。我在学校时花了很长时间考虑如何简化最大熵模型的计算量。终于有一天，我对我的导师说，我发现一种数学变换，可以将大部分最大熵模型的训练时间在 IIS 的基础上减少两个数量级。我在黑板上推导了一个多小时，他没有找出我的推导中的任何破绽，接着他又回去想了两天，然后告诉我我的算法是对的。从此，我们就建造了一些很大的最大熵模型。这些模型比修修补补的凑合的方法好不少。即使在我找到了快速训练算法以后，为了训练一个包含上下文信息，主题信息和语法信息的文法模型(language model)，我并行使用了20 台当时最快的 SUN 工作站，仍然计算了三个月。由此可见最大熵模型的复杂的一面。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">最大熵模型，可以说是集简与繁于一体，形式简单，实现复杂。值得一提的是，在Google的很多产品中，比如机器翻译，都直接或间接地用到了最大熵模型。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp; 讲到这里，读者也许会问，当年最早改进最大熵模型算法的达拉皮垂兄弟这些年难道没有做任何事吗？他们在九十年代初贾里尼克离开 IBM 后，也退出了学术界，而到在金融界大显身手。他们两人和很多 IBM 语音识别的同事一同到了一家当时还不大，但现在是世界上最成功对冲基金(hedge fund)公司----文艺复兴技术公司 (Renaissance Technologies)。我们知道，决定股票涨落的因素可能有几十甚至上百种，而最大熵方法恰恰能找到一个同时满足成千上万种不同条件的模型。达拉皮垂兄弟等科学家在那里，用于最大熵模型和其他一些先进的数学工具对股票预测，获得了巨大的成功。从该基金 1988 年创立至今，它的净回报率高达平均每年 34%。也就是说，如果 1988 年你在该基金投入一块钱，今天你能得到 200 块钱。这个业绩，远远超过股神巴菲特的旗舰公司伯克夏哈撒韦（Berkshire Hathaway)。同期，伯克夏哈撒韦的总回报是 16 倍。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp; 值得一提的是，信息处理的很多数学手段，包括隐含马尔可夫模型、子波变换、贝叶斯网络等等，在华尔街多有直接的应用。由此可见，数学模型的作用。</p><h1><span style="background-color: rgba(153, 204, 255, 1)">HMM（</span><strong style="margin: 0; padding: 0; background-color: rgba(153, 204, 255, 1)">隐马尔可夫模型</strong><span style="background-color: rgba(153, 204, 255, 1)">） &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</span></h1><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><strong style="margin: 0; padding: 0">隐马尔可夫模型</strong>（Hidden Markov Model，HMM）是统计模型，它用来描述一个含有隐含未知参数的马尔可夫过程。其难点是从可观察的参数中确定该过程的隐含参数。然后利用这些参数来作进一步的分析，例如模式识别。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">是在被建模的系统被认为是一个马尔可夫过程与未观测到的（隐藏的）的状态的统计马尔可夫模型。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">下面用一个简单的例子来阐述：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">假设我手里有三个不同的骰子。第一个骰子是我们平常见的骰子（称这个骰子为D6），6个面，每个面（1，2，3，4，5，6）出现的概率是1/6。第二个骰子是个四面体（称这个骰子为D4），每个面（1，2，3，4）出现的概率是1/4。第三个骰子有八个面（称这个骰子为D8），每个面（1，2，3，4，5，6，7，8）出现的概率是1/8。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450305163828.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450315321886.png" alt="image" width="599" height="325" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">假设我们开始掷骰子，我们先从三个骰子里挑一个，挑到每一个骰子的概率都是1/3。然后我们掷骰子，得到一个数字，1，2，3，4，5，6，7，8中的一个。不停的重复上述过程，我们会得到一串数字，每个数字都是1，2，3，4，5，6，7，8中的一个。例如我们可能得到这么一串数字（掷骰子10次）：1 6 3 5 2 7 3 5 2 4</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">这串数字叫做可见状态链。但是在隐马尔可夫模型中，我们不仅仅有这么一串可见状态链，还有一串隐含状态链。在这个例子里，这串隐含状态链就是你用的骰子的序列。比如，隐含状态链有可能是：D6 D8 D8 D6 D4 D8 D6 D6 D4 D8</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">一般来说，HMM中说到的马尔可夫链其实是指隐含状态链，因为隐含状态（骰子）之间存在转换概率（transition probability）。在我们这个例子里，D6的下一个状态是D4，D6，D8的概率都是1/3。D4，D8的下一个状态是D4，D6，D8的转换概率也都一样是1/3。这样设定是为了最开始容易说清楚，但是我们其实是可以随意设定转换概率的。比如，我们可以这样定义，D6后面不能接D4，D6后面是D6的概率是0.9，是D8的概率是0.1。这样就是一个新的HMM。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">同样的，尽管可见状态之间没有转换概率，但是隐含状态和可见状态之间有一个概率叫做输出概率（emission probability）。就我们的例子来说，六面骰（D6）产生1的输出概率是1/6。产生2，3，4，5，6的概率也都是1/6。我们同样可以对输出概率进行其他定义。比如，我有一个被赌场动过手脚的六面骰子，掷出来是1的概率更大，是1/2，掷出来是2，3，4，5，6的概率是1/10。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450321576527.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450330639383.png" alt="image" width="575" height="311" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450339544712.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450345487598.png" alt="image" width="336" height="312" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">其实对于HMM来说，如果提前知道所有隐含状态之间的转换概率和所有隐含状态到所有可见状态之间的输出概率，做模拟是相当容易的。但是应用HMM模型时候呢，往往是缺失了一部分信息的，有时候你知道骰子有几种，每种骰子是什么，但是不知道掷出来的骰子序列；有时候你只是看到了很多次掷骰子的结果，剩下的什么都不知道。如果应用算法去估计这些缺失的信息，就成了一个很重要的问题。这些算法我会在下面详细讲。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 如果你只想看一个简单易懂的例子，就不需要往下看了。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp; ×××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××××&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp; 说两句废话，答主认为呢，要了解一个算法，要做到以下两点：会其意，知其形。答主回答的，其实主要是第一点。但是这一点呢，恰恰是最重要，而且很多书上不会讲的。正如你在追一个姑娘，姑娘对你说“你什么都没做错！”你要是只看姑娘的表达形式呢，认为自己什么都没做错，显然就理解错了。你要理会姑娘的意思，“你赶紧给我道歉！”这样当你看到对应的表达形式呢，赶紧认错，跪地求饶就对了。数学也是一样，你要是不理解意思，光看公式，往往一头雾水。不过呢，数学的表达顶多也就是晦涩了点，姑娘的表达呢，有的时候就完全和本意相反。所以答主一直认为理解姑娘比理解数学难多了。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">回到正题，和HMM模型相关的算法主要分为三类，分别解决三种问题：&nbsp;<br style="margin: 0; padding: 0"><strong style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1）知道骰子有几种（隐含状态数量），每种骰子是什么（转换概率），根据掷骰子掷出的结果（可见状态链），我想知道每次掷出来的都是哪种骰子（隐含状态链）。</strong>&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这个问题呢，在语音识别领域呢，叫做解码问题。这个问题其实有两种解法，会给出两个不同的答案。每个答案都对，只不过这些答案的意义不一样。第一种解法求最大似然状态路径，说通俗点呢，就是我求一串骰子序列，这串骰子序列产生观测结果的概率最大。第二种解法呢，就不是求一组骰子序列了，而是求每次掷出的骰子分别是某种骰子的概率。比如说我看到结果后，我可以求得第一次掷骰子是D4的概率是0.5，D6的概率是0.3，D8的概率是0.2.第一种解法我会在下面说到，但是第二种解法我就不写在这里了，如果大家有兴趣，我们另开一个问题继续写吧。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><strong style="margin: 0; padding: 0">2）还是知道骰子有几种</strong><strong style="margin: 0; padding: 0">（隐含状态数量）</strong><strong style="margin: 0; padding: 0">，每种骰子是什么</strong><strong style="margin: 0; padding: 0">（转换概率）</strong><strong style="margin: 0; padding: 0">，根据掷骰子掷出的结果</strong><strong style="margin: 0; padding: 0">（可见状态链）</strong><strong style="margin: 0; padding: 0">，我想知道掷出这个结果的概率。</strong>&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 看似这个问题意义不大，因为你掷出来的结果很多时候都对应了一个比较大的概率。问这个问题的目的呢，其实是检测观察到的结果和已知的模型是否吻合。如果很多次结果都对应了比较小的概率，那么就说明我们已知的模型很有可能是错的，有人偷偷把我们的骰子給换了。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><strong style="margin: 0; padding: 0">3）知道骰子有几种</strong><strong style="margin: 0; padding: 0">（隐含状态数量）</strong><strong style="margin: 0; padding: 0">，不知道每种骰子是什么</strong><strong style="margin: 0; padding: 0">（转换概率）</strong><strong style="margin: 0; padding: 0">，观测到很多次掷骰子的结果</strong><strong style="margin: 0; padding: 0">（可见状态链）</strong><strong style="margin: 0; padding: 0">，我想反推出每种骰子是什么</strong><strong style="margin: 0; padding: 0">（转换概率）</strong><strong style="margin: 0; padding: 0">。</strong>&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这个问题很重要，因为这是最常见的情况。很多时候我们只有可见结果，不知道HMM模型里的参数，我们需要从可见结果估计出这些参数，这是建模的一个必要步骤。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">问题阐述完了，下面就开始说解法。（0号问题在上面没有提，只是作为解决上述问题的一个辅助）&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.一个简单问题&nbsp;<br style="margin: 0; padding: 0">其实这个问题实用价值不高。由于对下面较难的问题有帮助，所以先在这里提一下。&nbsp;<br style="margin: 0; padding: 0">知道骰子有几种，每种骰子是什么，每次掷的都是什么骰子，根据掷骰子掷出的结果，求产生这个结果的概率。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450350489511.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450356269168.png" alt="image" width="360" height="238" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">解法无非就是概率相乘：&nbsp;<br style="margin: 0; padding: 0"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation(1)" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0"><strong style="margin: 0; padding: 0">1.看见不可见的，破解骰子序列</strong>&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这里我说的是第一种解法，解最大似然路径问题。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 举例来说，我知道我有三个骰子，六面骰，四面骰，八面骰。我也知道我掷了十次的结果（1 6 3 5 2 7 3 5 2 4），我不知道每次用了那种骰子，我想知道最有可能的骰子序列。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">其实最简单而暴力的方法就是穷举所有可能的骰子序列，然后依照第零个问题的解法把每个序列对应的概率算出来。然后我们从里面把对应最大概率的序列挑出来就行了。如果马尔可夫链不长，当然可行。如果长的话，穷举的数量太大，就很难完成了。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 另外一种很有名的算法叫做Viterbi algorithm. 要理解这个算法，我们先看几个简单的列子。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 首先，如果我们只掷一次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450361262083.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450366738982.png" alt="image" width="48" height="113" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">看到结果为1.对应的最大概率骰子序列就是D4，因为D4产生1的概率是1/4，高于1/6和1/8.&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 把这个情况拓展，我们掷两次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450369701425.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450373608137.png" alt="image" width="107" height="105" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">结果为1，6.这时问题变得复杂起来，我们要计算三个值，分别是第二个骰子是D6，D4，D8的最大概率。显然，要取到最大概率，第一个骰子必须为D4。这时，第二个骰子取到D6的最大概率是&nbsp;<br style="margin: 0; padding: 0"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation(2)" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation(3)" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 同样的，我们可以计算第二个骰子是D4或D8时的最大概率。我们发现，第二个骰子取到D6的概率最大。而使这个概率最大时，第一个骰子为D4。所以最大概率骰子序列就是D4 D6。&nbsp;<br style="margin: 0; padding: 0">继续拓展，我们掷三次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450384543938.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450394547765.png" alt="image" width="154" height="112" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">同样，我们计算第三个骰子分别是D6，D4，D8的最大概率。我们再次发现，要取到最大概率，第二个骰子必须为D6。这时，第三个骰子取到D4的最大概率是<img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation(4)" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/equation(5)" alt="" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto">&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 同上，我们可以计算第三个骰子是D6或D8时的最大概率。我们发现，第三个骰子取到D4的概率最大。而使这个概率最大时，第二个骰子为D6，第一个骰子为D4。所以最大概率骰子序列就是D4 D6 D4。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">写到这里，大家应该看出点规律了。既然掷骰子一二三次可以算，掷多少次都可以以此类推。我们发现，我们要求最大概率骰子序列时要做这么几件事情。首先，不管序列多长，要从序列长度为1算起，算序列长度为1时取到每个骰子的最大概率。然后，逐渐增加长度，每增加一次长度，重新算一遍在这个长度下最后一个位置取到每个骰子的最大概率。因为上一个长度下的取到每个骰子的最大概率都算过了，重新计算的话其实不难。当我们算到最后一位时，就知道最后一位是哪个骰子的概率最大了。然后，我们要把对应这个最大概率的序列从后往前推出来。&nbsp;<br style="margin: 0; padding: 0"><strong style="margin: 0; padding: 0">2.谁动了我的骰子？</strong>&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 比如说你怀疑自己的六面骰被赌场动过手脚了，有可能被换成另一种六面骰，这种六面骰掷出来是1的概率更大，是1/2，掷出来是2，3，4，5，6的概率是1/10。你怎么办么？答案很简单，算一算正常的三个骰子掷出一段序列的概率，再算一算不正常的六面骰和另外两个正常骰子掷出这段序列的概率。如果前者比后者小，你就要小心了。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 比如说掷骰子的结果是：&nbsp;<br style="margin: 0; padding: 0"><a href="http://images0.cnblogs.com/blog/133059/201507/161450402987108.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450406884821.png" alt="image" width="161" height="105" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">要算用正常的三个骰子掷出这个结果的概率，其实就是将所有可能情况的概率进行加和计算。同样，简单而暴力的方法就是把穷举所有的骰子序列，还是计算每个骰子序列对应的概率，但是这回，我们不挑最大值了，而是把所有算出来的概率相加，得到的总概率就是我们要求的结果。这个方法依然不能应用于太长的骰子序列（马尔可夫链）。&nbsp;<br style="margin: 0; padding: 0">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 我们会应用一个和前一个问题类似的解法，只不过前一个问题关心的是概率最大值，这个问题关心的是概率之和。解决这个问题的算法叫做前向算法（forward algorithm）。&nbsp;<br style="margin: 0; padding: 0">首先，如果我们只掷一次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450412515950.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450419851092.png" alt="image" width="59" height="111" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">看到结果为1.产生这个结果的总概率可以按照如下计算，总概率为0.18：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450427046706.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450434381848.png" alt="image" width="593" height="171" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">把这个情况拓展，我们掷两次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450442206677.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450445489876.png" alt="image" width="106" height="104" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">看到结果为1，6.产生这个结果的总概率可以按照如下计算，总概率为0.05：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450450328560.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450459079660.png" alt="image" width="596" height="173" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">继续拓展，我们掷三次骰子：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450469549473.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450480322045.png" alt="image" width="171" height="105" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">看到结果为1，6，3.产生这个结果的总概率可以按照如下计算，总概率为0.03：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450499388728.png" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="image" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450513459200.png" alt="image" width="593" height="174" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">同样的，我们一步一步的算，有多长算多长，再长的马尔可夫链总能算出来的。用同样的方法，也可以算出不正常的六面骰和另外两个正常骰子掷出这段序列的概率，然后我们比较一下这两个概率大小，就能知道你的骰子是不是被人换了。</p><h1><span style="background-color: rgba(153, 204, 255, 1)">Viterbi algorithm &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></h1><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">HMM（隐马尔可夫模型）是用来描述隐含未知参数的统计模型，举一个经典的例子：一个东京的朋友每天根据天气{下雨，天晴}决定当天的活动{公园散步,购物,清理房间}中的一种，我每天只能在twitter上看到她发的推“啊，我前天公园散步、昨天购物、今天清理房间了！”，那么我可以根据她发的推特推断东京这三天的天气。在这个例子里，显状态是活动，隐状态是天气。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">任何一个HMM都可以通过下列五元组来描述：</p><div style="margin: 5px 0; font-size: 12px !important"><pre style="margin-top: 0; margin-bottom: 0; padding: 0; white-space: pre-wrap; word-wrap: break-word; font-family: &quot;Courier New&quot; !important"><span style="margin: 0; padding: 0; line-height: 1.5">:param obs:观测序列 :param states:隐状态 :param start_p:初始概率（隐状态） :param trans_p:转移概率（隐状态） :param emit_p: 发射概率 （隐状态表现为显状态的概率）</span></pre></div><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a href="http://images0.cnblogs.com/blog/133059/201507/161450524231771.jpg" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)"><img title="6cbb8645gw1egs40a3bpmj208n09574o" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/161450536414597.jpg" alt="6cbb8645gw1egs40a3bpmj208n09574o" width="311" height="329" style="margin: 0; padding: 0; border-width: 0; max-width: 900px; height: auto; display: inline"></a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">伪码如下：</p><div style="margin: 5px 0; font-size: 12px !important"><div style="margin: 5px 0 0; padding: 0"><span style="margin: 0; padding: 0 5px 0 0; line-height: 1.5"><a title="复制代码" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1); text-decoration: underline; border: none !important"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/copycode.gif" alt="复制代码" style="margin: 0; padding: 0; max-width: 900px; height: auto"></a></span></div><pre style="margin-top: 0; margin-bottom: 0; padding: 0; white-space: pre-wrap; word-wrap: break-word; font-family: &quot;Courier New&quot; !important">states = ('Rainy', 'Sunny'<span style="margin: 0; padding: 0; line-height: 1.5">)   observations </span>= ('walk', 'shop', 'clean'<span style="margin: 0; padding: 0; line-height: 1.5">)   start_probability </span>= {'Rainy': 0.6, 'Sunny': 0.4<span style="margin: 0; padding: 0; line-height: 1.5">}   transition_probability </span>=<span style="margin: 0; padding: 0; line-height: 1.5"> {     </span>'Rainy' : {'Rainy': 0.7, 'Sunny': 0.3<span style="margin: 0; padding: 0; line-height: 1.5">},     </span>'Sunny' : {'Rainy': 0.4, 'Sunny': 0.6<span style="margin: 0; padding: 0; line-height: 1.5">},     }   emission_probability </span>=<span style="margin: 0; padding: 0; line-height: 1.5"> {     </span>'Rainy' : {'walk': 0.1, 'shop': 0.4, 'clean': 0.5<span style="margin: 0; padding: 0; line-height: 1.5">},     </span>'Sunny' : {'walk': 0.6, 'shop': 0.3, 'clean': 0.1<span style="margin: 0; padding: 0; line-height: 1.5">}, }</span></pre><div style="margin: 5px 0 0; padding: 0"><span style="margin: 0; padding: 0 5px 0 0; line-height: 1.5"><a title="复制代码" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1); text-decoration: underline; border: none !important"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/copycode.gif" alt="复制代码" style="margin: 0; padding: 0; max-width: 900px; height: auto"></a></span></div></div><h4><span style="background-color: rgba(153, 204, 255, 1)">求解最可能的天气 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</span></h4><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">求解最可能的隐状态序列是HMM的三个典型问题之一，通常用维特比算法解决。维特比算法就是求解HMM上的最短路径（-log(prob)，也即是最大概率）的算法。</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">稍微用中文讲讲思路，很明显，第一天天晴还是下雨可以算出来：</p><ol style="margin: 0; padding: 0 0 0 40px; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 13px; background-color: rgba(254, 254, 242, 1)"><li style="margin: 0 0 1em; padding: 0; list-style: decimal"><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal">定义V[时间][今天天气] = 概率，注意今天天气指的是，前几天的天气都确定下来了（概率最大）今天天气是X的概率，这里的概率就是一个累乘的概率了。</p></li><li style="margin: 0 0 1em; padding: 0; list-style: decimal"><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal">&nbsp;&nbsp;&nbsp; 因为第一天我的朋友去散步了，所以第一天下雨的概率V[第一天][下雨] = 初始概率[下雨] * 发射概率[下雨][散步] = 0.6 * 0.1 = 0.06，同理可得V[第一天][天晴] = 0.24 。从直觉上来看，因为第一天朋友出门了，她一般喜欢在天晴的时候散步，所以第一天天晴的概率比较大，数字与直觉统一了。</p></li><li style="margin: 0 0 1em; padding: 0; list-style: decimal"><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal">从第二天开始，对于每种天气Y，都有前一天天气是X的概率 * X转移到Y的概率 * Y天气下朋友进行这天这种活动的概率。因为前一天天气X有两种可能，所以Y的概率有两个，选取其中较大一个作为V[第二天][天气Y]的概率，同时将今天的天气加入到结果序列中</p></li><li style="margin: 0 0 1em; padding: 0; list-style: decimal"><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal">比较V[最后一天][下雨]和[最后一天][天晴]的概率，找出较大的哪一个对应的序列，就是最终结果。</p></li></ol><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">算法的代码可以在github上看到，地址为：</p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)"><a title="https://github.com/hankcs/Viterbi" href="https://github.com/hankcs/Viterbi" style="margin: 0; padding: 0; color: rgba(7, 93, 179, 1)">https://github.com/hankcs/Viterbi</a></p><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">运行完成后根据Viterbi得到结果：</p><div style="margin: 5px 0; font-size: 12px !important"><pre style="margin-top: 0; margin-bottom: 0; padding: 0; white-space: pre-wrap; word-wrap: break-word; font-family: &quot;Courier New&quot; !important">Sunny Rainy Rainy</pre></div><p style="margin-top: 0; margin-right: 0; margin-left: 0; padding: 0; line-height: 27.2px; color: rgba(47, 47, 47, 1); font-size: 16px; text-indent: 25px; font-family: &quot;lucida grande&quot;, &quot;lucida sans unicode&quot;, lucida, helvetica, &quot;Hiragino Sans GB&quot;, &quot;YaHei Consolas Hybrid&quot;, &quot;Microsoft YaHei&quot;, &quot;WenQuanYi Micro Hei&quot;; text-align: justify; word-break: normal; background-color: rgba(254, 254, 242, 1)">Viterbi被广泛应用到分词，词性标注等应用场景。</p>
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+<div id="EntryTag">
+    标签: 
+            <a href="https://www.cnblogs.com/fulcra/tag/%E7%BB%9F%E8%AE%A1/">统计</a>,             <a href="https://www.cnblogs.com/fulcra/tag/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据</a>,             <a href="https://www.cnblogs.com/fulcra/tag/%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/">马尔可夫</a></div>
+
+    <div id="blog_post_info">
+<div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(11065474,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+        <a id="green_channel_follow" onclick="follow(&#39;2a2ae266-198c-4c1a-4dc0-08d6f5bdb7c6&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/fulcra/" target="_blank"><img src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/20190621155847.png" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="https://home.cnblogs.com/u/fulcra/">fulcra-tech</a><br>
+            <a href="https://home.cnblogs.com/u/fulcra/followees/">关注 - 1</a><br>
+            <a href="https://home.cnblogs.com/u/fulcra/followers/">粉丝 - 10</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;2a2ae266-198c-4c1a-4dc0-08d6f5bdb7c6&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(11065474,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">6</span>
+    </div>
+    <div class="buryit" onclick="votePost(11065474,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+
+<script type="text/javascript">
+    currentDiggType = 0;
+</script></div>
+    <div class="clear"></div>
+    <div id="post_next_prev">
+
+    <a href="https://www.cnblogs.com/fulcra/p/11065169.html" class="p_n_p_prefix">« </a> 上一篇：    <a href="https://www.cnblogs.com/fulcra/p/11065169.html" title="发布于 2019-06-21 16:04">数学之美</a>
+    <br>
+    <a href="https://www.cnblogs.com/fulcra/p/11076602.html" class="p_n_p_prefix">» </a> 下一篇：    <a href="https://www.cnblogs.com/fulcra/p/11076602.html" title="发布于 2019-06-24 13:47">Viterbi-Algorithm（维特比）算法</a>
+
+</div>
+</div>
+		</div>
+		<div class="postDesc">posted @ 
+<span id="post-date">2019-06-21 16:42</span>&nbsp;
+<a href="https://www.cnblogs.com/fulcra/">fulcra-tech</a>&nbsp;
+阅读(<span id="post_view_count">54762</span>)&nbsp;
+评论(<span id="post_comment_count">5</span>)&nbsp;
+<a href="https://i.cnblogs.com/EditPosts.aspx?postid=11065474" rel="nofollow">编辑</a>&nbsp;
+<a href="javascript:void(0)" onclick="AddToWz(11065474);return false;">收藏</a></div>
+	</div>
+	
+	
+</div><!--end: topics 文章、评论容器-->
+<script src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/highlight.min.js.下载"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 522638, cb_blogApp = 'fulcra', cb_blogUserGuid = '2a2ae266-198c-4c1a-4dc0-08d6f5bdb7c6';
+    var cb_entryId = 11065474, cb_entryCreatedDate = '2019-06-21 16:42', cb_postType = 1;
+    updatePostStats(
+        [cb_entryId],
+        function(id, count) { $("#post_view_count").text(count) },
+        function(id, count) { $("#post_comment_count").text(count) })
+</script>
+<a name="!comments"></a>
+<div id="blog-comments-placeholder">
+
+<div id="comment_pager_top">
+    
+</div>
+
+<!--done-->
+<br>
+<div class="feedback_area_title">评论</div>
+<div class="feedbackNoItems">
+    <div class="feedbackNoItems"></div>
+</div>
+
+    <div class="feedbackItem">
+        <div class="feedbackListSubtitle">
+            <div class="feedbackManage">
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </div>
+            
+<a href="https://www.cnblogs.com/fulcra/p/11065474.html#4541781" class="layer">#1楼</a>
+<a name="4541781" id="comment_anchor_4541781"></a>
+
+<span class="comment_date">2020-04-04 16:54</span>
+
+ | 
+        <a id="a_comment_author_4541781" href="https://www.cnblogs.com/heroisuseless/" target="_blank">heroisuseless</a>
+
+        </div>
+        <div class="feedbackCon">
+            
+<div id="comment_body_4541781" data-format-type="Markdown" class="blog_comment_body cnblogs-markdown">
+    <p>这才是教程啊，那些上来就给你公式的都是故意恶心你的</p>
+
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4541781, &#39;Digg&#39;, this.parentElement, false);">
+                支持(1)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4541781, &#39;Bury&#39;, this.parentElement, false);">
+                反对(1)
+            </a>
+        </div>
+        
+
+        </div>
+    </div>
+    <div class="feedbackItem">
+        <div class="feedbackListSubtitle">
+            <div class="feedbackManage">
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </div>
+            
+<a href="https://www.cnblogs.com/fulcra/p/11065474.html#4551378" class="layer">#2楼</a>
+<a name="4551378" id="comment_anchor_4551378"></a>
+
+<span class="comment_date">2020-04-15 16:59</span>
+
+ | 
+        <a id="a_comment_author_4551378" href="https://home.cnblogs.com/u/1885846/" target="_blank">机器人客服-琴</a>
+
+        </div>
+        <div class="feedbackCon">
+            
+<div id="comment_body_4551378" data-format-type="Markdown" class="blog_comment_body cnblogs-markdown">
+    <p>谢谢博主</p>
+
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4551378, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4551378, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        
+
+        </div>
+    </div>
+    <div class="feedbackItem">
+        <div class="feedbackListSubtitle">
+            <div class="feedbackManage">
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </div>
+            
+<a href="https://www.cnblogs.com/fulcra/p/11065474.html#4643052" class="layer">#3楼</a>
+<a name="4643052" id="comment_anchor_4643052"></a>
+
+<span class="comment_date">2020-07-29 11:41</span>
+
+ | 
+        <a id="a_comment_author_4643052" href="https://www.cnblogs.com/doristao/" target="_blank">DorisTao</a>
+
+        </div>
+        <div class="feedbackCon">
+            
+<div id="comment_body_4643052" data-format-type="Markdown" class="blog_comment_body cnblogs-markdown">
+    <p>感谢博主，我有个问题很想问下。你说熵越大系统越不稳定，越无序，那为什么还要有最大熵模型呢？</p>
+
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4643052, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4643052, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        <span id="comment_4643052_avatar" style="display:none">
+            https://pic.cnblogs.com/face/2008318/20200729170837.png
+        </span>
+
+        </div>
+    </div>
+    <div class="feedbackItem">
+        <div class="feedbackListSubtitle">
+            <div class="feedbackManage">
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </div>
+            
+<a href="https://www.cnblogs.com/fulcra/p/11065474.html#4655464" class="layer">#4楼</a>
+<a name="4655464" id="comment_anchor_4655464"></a>
+
+<span class="comment_date">2020-08-11 16:12</span>
+
+ | 
+        <a id="a_comment_author_4655464" href="https://www.cnblogs.com/Codroc/" target="_blank">Codroc</a>
+
+        </div>
+        <div class="feedbackCon">
+            
+<div id="comment_body_4655464" data-format-type="Markdown" class="blog_comment_body cnblogs-markdown">
+    <p><a href="https://www.cnblogs.com/fulcra/p/11065474.html#4643052" title="查看所回复的评论" onclick="commentManager.renderComments(0,50,4643052);">@</a>DorisTao<br>
+最大熵的概念其实就是等可能的概念，等可能就是说每一种情况发生的概率相等。而在你对某个随机变量的分布毫不知情的情况下，假设它为均匀分布（也就是等可能，每种情况发生的概率相等）才比较符合人们的认知</p>
+
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4655464, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4655464, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        <span id="comment_4655464_avatar" style="display:none">
+            https://pic.cnblogs.com/face/1944534/20200217113009.png
+        </span>
+
+        </div>
+    </div>
+    <div class="feedbackItem">
+        <div class="feedbackListSubtitle">
+            <div class="feedbackManage">
+                &nbsp;&nbsp;
+
+<span class="comment_actions">
+    
+    
+    
+    
+</span>
+
+
+            </div>
+            
+<a href="https://www.cnblogs.com/fulcra/p/11065474.html#4690487" class="layer">#5楼</a>
+<a name="4690487" id="comment_anchor_4690487"></a>
+    <span id="comment-maxId" style="display: none">4690487</span>
+    <span id="comment-maxDate" style="display: none">2020/9/23 下午1:47:57</span>
+
+<span class="comment_date">2020-09-23 13:47</span>
+
+ | 
+        <a id="a_comment_author_4690487" href="https://home.cnblogs.com/u/2164092/" target="_blank">nbsh</a>
+
+        </div>
+        <div class="feedbackCon">
+            
+<div id="comment_body_4690487" data-format-type="Markdown" class="blog_comment_body cnblogs-markdown">
+    <p>讲的真好，想看博主讲讲问题3 建立模型的过程</p>
+
+</div>
+        <div class="comment_vote">
+            <span class="comment_error" style="color: red"></span>
+            <a href="javascript:void(0);" class="comment_digg" onclick="return voteComment(4690487, &#39;Digg&#39;, this.parentElement, false);">
+                支持(0)
+            </a>
+            <a href="javascript:void(0);" class="comment_burry" onclick="return voteComment(4690487, &#39;Bury&#39;, this.parentElement, false);">
+                反对(0)
+            </a>
+        </div>
+        
+
+        </div>
+    </div>
+
+<div id="comment_pager_bottom">
+    
+</div>
+
+
+</div>
+<div id="comment_form" class="commentform">
+    <a name="commentform"></a>
+    <div id="divCommentShow"></div>
+    <div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/fulcra/p/11065474.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/fulcra/p/11065474.html#top">返回顶部</a></div>
+    <div id="comment_form_container" style="visibility: visible;"><div class="login_tips">
+    登录后才能发表评论，立即 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或
+    <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，
+    <a href="https://www.cnblogs.com/">访问</a> 网站首页
+</div>
+<div class="under-comment-nav">
+        <a href="https://brands.cnblogs.com/aws/free?source=blog_under_login_tip" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-login-tip-aws&#39;)">博客园派送云上免费午餐，AWS注册立享12个月免费套餐</a>
+</div></div>
+    <div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+    <div id="ad_t2"><a href="http://www.softbam.com/index.htm" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-ucancode-1103&#39;)">【推荐】News: 大型组态、工控、仿真、CADGIS 50万行VC++源码免费下载</a><br><a href="https://www.cnblogs.com/himmr/p/14043893.html" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-Himmr&#39;)">【推荐】博客园 &amp; 陌上花开HIMMR 给单身的程序员小哥哥助力脱单啦～</a><br><a href="http://click.aliyun.com/m/1000196436/" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-阿里云双11-CH&#39;)">【推荐】阿里云钜惠返场，奖励继续赢5万现金，错过再等一年</a><br><a href="https://brands.cnblogs.com/huawei" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-华为专区&#39;)">【推荐】了不起的开发者，挡不住的华为，园子里的品牌专区</a><br><a href="https://brands.cnblogs.com/agora" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-声网专区&#39;)">【推荐】未知数的距离，毫秒间的传递，声网与你实时互动</a><br><a href="https://brands.cnblogs.com/aws/free?source=CH" target="_blank" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;T2-AWS&#39;)">【福利】AWS携手博客园为开发者送免费套餐与抵扣券</a><br></div>
+    <div id="opt_under_post"></div>
+    <div id="cnblogs_c1" class="c_ad_block">
+        <div id="div-gpt-ad-1592365906576-0" style="width: 300px; height: 250px;"></div>
+    </div>
+    <div id="under_post_news"><div class="recomm-block"><b>相关博文：</b><br>·  <a title="隐马尔科夫模型HMM(HiddenMarkovModel)" href="https://www.cnblogs.com/hithongming/p/12083836.html" target="_blank" onclick="clickRecomItmem(12083836)">隐马尔科夫模型HMM(HiddenMarkovModel)</a><br>·  <a title="8HMM和CRF" href="https://www.cnblogs.com/chen8023miss/p/11977224.html" target="_blank" onclick="clickRecomItmem(11977224)">8HMM和CRF</a><br>·  <a title="HMM模型原理及其实战" href="https://www.cnblogs.com/zhangxinying/p/12071061.html" target="_blank" onclick="clickRecomItmem(12071061)">HMM模型原理及其实战</a><br>·  <a title="隐私政策" href="https://www.cnblogs.com/akun0805/p/12068998.html" target="_blank" onclick="clickRecomItmem(12068998)">隐私政策</a><br>·  <a title="隐藏和展开" href="https://www.cnblogs.com/heibo/p/11995477.html" target="_blank" onclick="clickRecomItmem(11995477)">隐藏和展开</a><br>»  <a target="_blank" href="https://recomm.cnblogs.com/blogpost/11065474">更多推荐...</a></div></div>
+    <div id="cnblogs_c2" class="c_ad_block"><a href="https://brands.cnblogs.com/aws/free?source=C2" target="_blank"><img width="468" height="60" src="./一文搞懂HMM（隐马尔可夫模型）-转载 - fulcra-tech - 博客园_files/2016690-20201029095514173-327529066.png" alt="AWS免费套餐" onclick="ga(&#39;send&#39;, &#39;event&#39;, &#39;Link&#39;, &#39;click&#39;, &#39;C2-AWS&#39;);"></a></div>
+    <div id="under_post_kb">
+<div class="itnews c_ad_block">
+    <b>最新 IT 新闻</b>:
+    <br>
+ ·          <a href="https://news.cnblogs.com/n/678264/" target="_blank">程序员去广告被索赔100万元 网友算了笔账：真的不无辜</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/678263/" target="_blank">网友算出台积电年终收入：全年41倍月薪</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/678262/" target="_blank">辛巴回应燕窝事件：召回全部问题产品，承担退一赔三责任</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/678261/" target="_blank">长租公寓的歧路、套路和绝路</a>
+        <br>
+ ·          <a href="https://news.cnblogs.com/n/678257/" target="_blank">长视频要变天？传阿里腾讯收购爱奇艺，官方回应！</a>
+        <br>
+    » <a href="https://news.cnblogs.com/" title="IT 新闻" target="_blank">更多新闻...</a>
+</div></div>
+    <div id="HistoryToday" class="c_ad_block"></div>
+    <script type="text/javascript">
+       var commentManager = new blogCommentManager();
+       commentManager.renderComments(0);
+       fixPostBody();
+       deliverBigBanner();
+setTimeout(function() { incrementViewCount(cb_entryId); }, 50);       deliverT2();
+       deliverC1C2();
+       loadNewsAndKb();
+       loadBlogSignature();
+LoadPostCategoriesTags(cb_blogId, cb_entryId);       LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+       GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+       loadOptUnderPost();
+       GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);
+   </script>
+</div>
+
+</div>
+
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			<div id="sidebar_news" class="newsItem"><!--done-->
+<div class="newsItem">
+<h3 class="catListTitle">公告</h3>
+	
+<div id="blog-news">
+    
+    <div id="profile_block">
+        昵称：
+        <a href="https://home.cnblogs.com/u/fulcra/">
+            fulcra-tech
+        </a>
+        <br>
+        园龄：
+        <a href="https://home.cnblogs.com/u/fulcra/" title="入园时间：2019-06-21">
+            1年5个月
+        </a>
+        <br>
+        粉丝：
+        <a href="https://home.cnblogs.com/u/fulcra/followers/">
+            10
+        </a>
+        <br>
+        关注：
+        <a href="https://home.cnblogs.com/u/fulcra/followees/">
+            1
+        </a>
+        <div id="p_b_follow">
+<a href="javascript:void(0)" onclick="follow(&#39;2a2ae266-198c-4c1a-4dc0-08d6f5bdb7c6&#39;)">+加关注</a></div>
+        <script>getFollowStatus('2a2ae266-198c-4c1a-4dc0-08d6f5bdb7c6');</script>
+    </div>
+</div>
+</div>
+
+</div>
+<div id="sidebar_c3"></div>
+			<div id="calendar"><div id="blog-calendar" style="">
+
+<table id="blogCalendar" class="Cal" cellspacing="0" cellpadding="0" title="Calendar" border="0">
+    <tbody>
+        <tr>
+            <td colspan="7">
+                <table class="CalTitle" cellspacing="0" border="0">
+                    <tbody>
+                        <tr>
+                            <td class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2020/10/27&#39;); return false;">&lt;</a>
+                            </td>
+                            <td align="center">2020年11月</td>
+                            <td align="right" class="CalNextPrev">
+                                <a href="javascript:void(0);" onclick="loadBlogCalendar(&#39;2020/12/27&#39;); return false;">&gt;</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    <tr>
+        <th class="CalDayHeader" align="center" abbr="日" scope="col">日</th>
+        <th class="CalDayHeader" align="center" abbr="一" scope="col">一</th>
+        <th class="CalDayHeader" align="center" abbr="二" scope="col">二</th>
+        <th class="CalDayHeader" align="center" abbr="三" scope="col">三</th>
+        <th class="CalDayHeader" align="center" abbr="四" scope="col">四</th>
+        <th class="CalDayHeader" align="center" abbr="五" scope="col">五</th>
+        <th class="CalDayHeader" align="center" abbr="六" scope="col">六</th>
+    </tr>
+            <tr>
+                        <td class="CalWeekendDay" align="center">
+                            1
+                        </td>
+                        <td class="" align="center">
+                            2
+                        </td>
+                        <td class="" align="center">
+                            3
+                        </td>
+                        <td class="" align="center">
+                            4
+                        </td>
+                        <td class="" align="center">
+                            5
+                        </td>
+                        <td class="" align="center">
+                            6
+                        </td>
+                    <td class="CalWeekendDay" align="center">
+                        7
+                    </td>
+            </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            8
+                        </td>
+                            <td class="" align="center">
+                                9
+                            </td>
+                            <td class="" align="center">
+                                10
+                            </td>
+                            <td class="" align="center">
+                                11
+                            </td>
+                            <td class="" align="center">
+                                12
+                            </td>
+                            <td class="" align="center">
+                                13
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            14
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            15
+                        </td>
+                            <td class="" align="center">
+                                16
+                            </td>
+                            <td class="" align="center">
+                                17
+                            </td>
+                            <td class="" align="center">
+                                18
+                            </td>
+                            <td class="" align="center">
+                                19
+                            </td>
+                            <td class="" align="center">
+                                20
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            21
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            22
+                        </td>
+                            <td class="" align="center">
+                                23
+                            </td>
+                            <td class="" align="center">
+                                24
+                            </td>
+                            <td class="" align="center">
+                                25
+                            </td>
+                            <td class="" align="center">
+                                26
+                            </td>
+                            <td class="CalTodayDay" align="center">
+                                27
+                            </td>
+                        <td class="CalWeekendDay" align="center">
+                            28
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalWeekendDay" align="center">
+                            29
+                        </td>
+                            <td class="" align="center">
+                                30
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                1
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                2
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                3
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                4
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            5
+                        </td>
+                </tr>
+                <tr>
+                        <td class="CalOtherMonthDay" align="center">
+                            6
+                        </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                7
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                8
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                9
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                10
+                            </td>
+                            <td class="CalOtherMonthDay" align="center">
+                                11
+                            </td>
+                        <td class="CalOtherMonthDay" align="center">
+                            12
+                        </td>
+                </tr>
+    </tbody>
+</table></div><script>loadBlogDefaultCalendar();</script></div>
+			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"><!-- 搜索 -->
+<div id="sidebar_search" class="sidebar-block">
+    
+</div>
+
+<!-- 常用链接 -->
+<div id="sidebar_shortcut" class="sidebar-block"><div class="catListLink">
+<h3 class="catListTitle">
+常用链接
+</h3>
+<ul>
+    
+<li><a href="https://www.cnblogs.com/fulcra/p/" title="我的博客的随笔列表">我的随笔</a></li>
+<li><a href="https://www.cnblogs.com/fulcra/MyComments.html" title="我的发表过的评论列表">我的评论</a></li>
+<li><a href="https://www.cnblogs.com/fulcra/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li>
+<li><a href="https://www.cnblogs.com/fulcra/RecentComments.html" title="我的博客的评论列表">最新评论</a></li>
+<li><a href="https://www.cnblogs.com/fulcra/tag/" title="我的博客的标签列表">我的标签</a></li>
+
+    <li><a id="itemListLink" onclick="this.blur();WarpClass(&#39;itemListLink&#39;, &#39;itemListLin_con&#39;);return false;" href="https://www.cnblogs.com/fulcra/p/11065474.html#">更多链接</a></li>
+</ul>
+</div>
+
+</div>
+
+<!-- 最新随笔 -->
+
+
+<!-- 我的标签 -->
+<div id="sidebar_toptags" class="sidebar-block"><div class="catListTag">
+<h3 class="catListTitle">我的标签</h3>
+<ul>
+        <li>
+            <a href="https://www.cnblogs.com/fulcra/tag/%E5%A4%A7%E6%95%B0%E6%8D%AE/">大数据<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/fulcra/tag/%E9%A9%AC%E5%B0%94%E5%8F%AF%E5%A4%AB/">马尔可夫<span class="tag-count">(1)</span></a>
+        </li>
+        <li>
+            <a href="https://www.cnblogs.com/fulcra/tag/%E7%BB%9F%E8%AE%A1/">统计<span class="tag-count">(1)</span></a>
+        </li>
+    
+
+</ul>
+</div>
+
+</div>
+
+<!-- 积分与排名 -->
+
+
+<!-- 随笔分类、随笔档案、文章分类、新闻分类、相册、链接 -->
+<div id="sidebar_categories">
+<div class="catListPostArchive">
+<h3 class="catListTitle">
+随笔档案
+
+
+</h3>
+
+
+<ul>
+
+<li>
+<a href="https://www.cnblogs.com/fulcra/archive/2019/06.html" rel="" target="">
+    2019年6月(3)
+</a>
+ 
+</li>
+
+</ul>
+
+
+</div>
+
+</div>
+
+<!-- 最新评论 -->
+<div id="sidebar_recentcomments" class="sidebar-block"><div class="catListComment">
+<h3 class="catListTitle">最新评论</h3>
+
+	<div class="RecentCommentBlock">
+        <ul>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/fulcra/p/11065474.html">1. Re:一文搞懂HMM（隐马尔可夫模型）-转载</a></li>
+                    <li class="recent_comment_body"><p>讲的真好，想看博主讲讲问题3 建立模型的过程</p>
+</li>
+                    <li class="recent_comment_author">--nbsh</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/fulcra/p/11065474.html">2. Re:一文搞懂HMM（隐马尔可夫模型）-转载</a></li>
+                    <li class="recent_comment_body">@DorisTao 最大熵的概念其实就是等可能的概念，等可能就是说每一种情况发生的概率相等。而在你对某个随机变量的分布毫不知情的情况下，假设它为均匀分布（也就是等可能，每种情况发生的概率相等）才比较符...</li>
+                    <li class="recent_comment_author">--Codroc</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/fulcra/p/11065474.html">3. Re:一文搞懂HMM（隐马尔可夫模型）-转载</a></li>
+                    <li class="recent_comment_body"><p>感谢博主，我有个问题很想问下。你说熵越大系统越不稳定，越无序，那为什么还要有最大熵模型呢？</p>
+</li>
+                    <li class="recent_comment_author">--DorisTao</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/fulcra/p/11065474.html">4. Re:一文搞懂HMM（隐马尔可夫模型）-转载</a></li>
+                    <li class="recent_comment_body"><p>谢谢博主</p>
+</li>
+                    <li class="recent_comment_author">--机器人客服-琴</li>
+                    <li class="recent_comment_title"><a href="https://www.cnblogs.com/fulcra/p/11065474.html">5. Re:一文搞懂HMM（隐马尔可夫模型）-转载</a></li>
+                    <li class="recent_comment_body"><p>这才是教程啊，那些上来就给你公式的都是故意恶心你的</p>
+</li>
+                    <li class="recent_comment_author">--heroisuseless</li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+
+<!-- 阅读排行榜 -->
+<div id="sidebar_topviewedposts" class="sidebar-block"><div class="catListView">
+<h3 class="catListTitle">阅读排行榜</h3>
+	<div id="TopViewPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/fulcra/p/11065474.html">
+                            1. 一文搞懂HMM（隐马尔可夫模型）-转载(54745)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/fulcra/p/11076602.html">
+                            2. Viterbi-Algorithm（维特比）算法(793)
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.cnblogs.com/fulcra/p/11065169.html">
+                            3. 数学之美(224)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<!-- 评论排行榜 -->
+<div id="sidebar_topcommentedposts" class="sidebar-block"><div class="catListFeedback">
+<h3 class="catListTitle">评论排行榜</h3>
+	<div id="TopFeedbackPostsBlock">
+        <ul style="word-break:break-all">
+                    <li>
+                        <a href="https://www.cnblogs.com/fulcra/p/11065474.html">
+                            1. 一文搞懂HMM（隐马尔可夫模型）-转载(5)
+                        </a>
+                    </li>
+        </ul>
+    </div>
+</div>
+
+</div>
+
+<!-- 推荐排行榜 -->
+</div>
+                    <script>loadBlogSideColumn();</script>
+			</div>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		<!--done-->
+Copyright © 2020 fulcra-tech
+<br><span id="poweredby">Powered by .NET 5.0.0 on Kubernetes</span>
+
+
+
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    
+
+
+</body></html>

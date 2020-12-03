@@ -1,0 +1,6 @@
+熵公式：-plogp求和
+联合熵公式：H(X,Y)=-p(xi,yi)logp(xi,yi)求和
+条件熵：H(Y|X)=-p(xi,yi)logp(yi|xi)求和
+信息增益：g(Y,X)=H(Y)-H(Y|X)
+信息增益比：gR(Y,X)=g(Y,X)/H(X)
+Gini：1-(pk)^2求和
